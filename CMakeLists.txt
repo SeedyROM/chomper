@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.0)
+project(chomper)
+
+# Use C11
+set(CMAKE_C_STANDARD 11)
+
+# Get all the source files
+file(GLOB_RECURSE SOURCES src/*.c)
+
+# Include local dirs
+include_directories(src/)
+
+# Get SDL2
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+
+# Get OpenGL
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS})
+
+# Copy the assets to the build directory
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+
+# Add the executable
+add_executable(${PROJECT_NAME} ${SOURCES})
+# Link the libraries
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
