@@ -18,9 +18,6 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
-# Copy the assets to the build directory
-file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
-
 # Add the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 # Link the libraries
