@@ -3,7 +3,14 @@
 #include <errno.h>
 
 #include "renderer.h"
+#include "common.h"
 #include "shader.h"
+
+typedef struct Vertex
+{
+    float position[3];
+    float color[3];
+} Vertex;
 
 int main()
 {
@@ -16,12 +23,23 @@ int main()
     }
 
     // Setup drawing
-    float vertices[] = {
-        // positions         // colors
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // top right
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f,  // top left
+    Vertex vertices[] = {
+        {
+            .position = {0.5f, 0.5f, 0.0f},
+            .color = {1.0f, 0.0f, 0.0f},
+        },
+        {
+            .position = {0.5f, -0.5f, 0.0f},
+            .color = {0.0f, 1.0f, 0.0f},
+        },
+        {
+            .position = {-0.5f, -0.5f, 0.0f},
+            .color = {0.0f, 0.0f, 1.0f},
+        },
+        {
+            .position = {-0.5f, 0.5f, 0.0f},
+            .color = {1.0f, 1.0f, 0.0f},
+        },
     };
     unsigned int indices[] = {
         // note that we start from 0!
@@ -49,12 +67,13 @@ int main()
 
     // Enable the vertex attribute
     glEnableVertexAttribArray(0);
+    printf("Vertex size: %lu", STRUCT_FIELD_SIZE(Vertex, position));
     // Set the vertex attribute pointer
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, STRUCT_FIELD_SIZE(Vertex, position), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(offsetof(Vertex, position)));
     // Enable the vertex color attribute
     glEnableVertexAttribArray(1);
     // Set the vertex color attribute pointer
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(1, STRUCT_FIELD_SIZE(Vertex, color), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(offsetof(Vertex, color)));
 
     // Create the shader
     Shader *shader = Shader_Alloc();
