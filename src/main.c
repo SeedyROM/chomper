@@ -67,13 +67,12 @@ int main()
 
     // Enable the vertex attribute
     glEnableVertexAttribArray(0);
-    printf("Vertex size: %lu", STRUCT_FIELD_SIZE(Vertex, position));
     // Set the vertex attribute pointer
-    glVertexAttribPointer(0, STRUCT_FIELD_SIZE(Vertex, position), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(offsetof(Vertex, position)));
+    glVertexAttribPointer(0, STRUCT_FIELD_SIZE(Vertex, position), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, position));
     // Enable the vertex color attribute
     glEnableVertexAttribArray(1);
     // Set the vertex color attribute pointer
-    glVertexAttribPointer(1, STRUCT_FIELD_SIZE(Vertex, color), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(offsetof(Vertex, color)));
+    glVertexAttribPointer(1, STRUCT_FIELD_SIZE(Vertex, color), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, color));
 
     // Create the shader
     Shader *shader = Shader_Alloc();

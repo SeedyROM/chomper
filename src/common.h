@@ -23,4 +23,6 @@
 
 #define STRUCT_FIELD_SIZE(type, member) sizeof(((type){0}).member) / 4
 
+#define STRUCT_FIELD_OFFSET(type, member) (void *)offsetof(type, member)
+
 char *File_Open(const char *path);
