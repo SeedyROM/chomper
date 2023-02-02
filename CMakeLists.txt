@@ -18,6 +18,9 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
+# Include stb
+include_directories(external/stb/)
+
 # Add the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 # Link the libraries

@@ -1,22 +1,25 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "renderer.h"
 #include "common.h"
+#include "texture.h"
 #include "shader.h"
 
 typedef struct Vertex
 {
     float position[3];
     float color[3];
+    float tex_coord[2];
 } Vertex;
 
 int main()
 {
     // Create a renderer.
     Renderer *renderer = Renderer_Alloc();
-    if (!Renderer_Init(renderer, "Hello World", 640, 480))
+    if (!Renderer_Init(renderer, "Chomper v0.0.1", 720, 720))
     {
         fprintf(stderr, "Failed to initialize renderer");
         return 1;
@@ -27,18 +30,22 @@ int main()
         {
             .position = {0.5f, 0.5f, 0.0f},
             .color = {1.0f, 0.0f, 0.0f},
+            .tex_coord = {1.0f, 1.0f},
         },
         {
             .position = {0.5f, -0.5f, 0.0f},
             .color = {0.0f, 1.0f, 0.0f},
+            .tex_coord = {1.0f, 0.0f},
         },
         {
             .position = {-0.5f, -0.5f, 0.0f},
             .color = {0.0f, 0.0f, 1.0f},
+            .tex_coord = {0.0f, 0.0f},
         },
         {
             .position = {-0.5f, 0.5f, 0.0f},
             .color = {1.0f, 1.0f, 0.0f},
+            .tex_coord = {0.0f, 1.0f},
         },
     };
     unsigned int indices[] = {
@@ -73,12 +80,24 @@ int main()
     glEnableVertexAttribArray(1);
     // Set the vertex color attribute pointer
     glVertexAttribPointer(1, STRUCT_FIELD_SIZE(Vertex, color), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, color));
+    // Enable the vertex texture coordinate attribute
+    glEnableVertexAttribArray(2);
+    // Set the vertex texture coordinate attribute pointer
+    glVertexAttribPointer(2, STRUCT_FIELD_SIZE(Vertex, tex_coord), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, tex_coord));
 
     // Create the shader
     Shader *shader = Shader_Alloc();
     if (!Shader_FromSource(shader, "../assets/shaders/vertex.glsl", "../assets/shaders/fragment.glsl"))
     {
         fprintf(stderr, "Failed to create shader");
+        return 1;
+    }
+
+    // Load the texture
+    Texture *texture = Texture_Alloc();
+    if (!Texture_Load(texture, "../assets/textures/awesome.png"))
+    {
+        fprintf(stderr, "Failed to load texture");
         return 1;
     }
 
@@ -119,6 +138,7 @@ int main()
         // Draw the triangle
         glUseProgram(shader->program);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBindTexture(GL_TEXTURE_2D, texture->id);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Swap our back buffer to the front
@@ -127,6 +147,10 @@ int main()
 
     // Cleanup
     Shader_Dealloc(shader);
+
+    Texture_Unload(texture);
+    Texture_Dealloc(texture);
+
     Renderer_Destroy(renderer);
     Renderer_Dealloc(renderer);
 
