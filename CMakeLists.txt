@@ -18,6 +18,10 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
+#include CGLM
+add_subdirectory(external/cglm)
+include_directories(external/cglm/include)
+
 # Include stb
 include_directories(external/stb/)
 

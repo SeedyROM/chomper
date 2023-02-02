@@ -3,6 +3,10 @@
 #include <errno.h>
 #include <stdint.h>
 
+#include <cglm/mat4.h>
+#include <cglm/vec3.h>
+#include <cglm/cglm.h>
+
 #include "renderer.h"
 #include "common.h"
 #include "texture.h"
@@ -24,6 +28,8 @@ int main()
         fprintf(stderr, "Failed to initialize renderer");
         return 1;
     }
+
+    // TODO: This needs to be abstracted.
 
     // Setup drawing
     Vertex vertices[] = {
@@ -85,11 +91,21 @@ int main()
     // Set the vertex texture coordinate attribute pointer
     glVertexAttribPointer(2, STRUCT_FIELD_SIZE(Vertex, tex_coord), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, tex_coord));
 
+    // TODO: End abstracted drawing setup.
+
     // Create the shader
     Shader *shader = Shader_Alloc();
     if (!Shader_FromSource(shader, "../assets/shaders/vertex.glsl", "../assets/shaders/fragment.glsl"))
     {
         fprintf(stderr, "Failed to create shader");
+        return 1;
+    }
+
+    // Pass transform uniform to shader
+    GLuint transform_loc = glGetUniformLocation(shader->program, "transform");
+    if (transform_loc == -1)
+    {
+        fprintf(stderr, "Failed to get transform uniform location");
         return 1;
     }
 
@@ -100,6 +116,9 @@ int main()
         fprintf(stderr, "Failed to load texture");
         return 1;
     }
+
+    // Sprite position
+    vec3 position = {0.0f, 0.0f, 1.0f};
 
     // Run the game loop
     bool close_requested = false;
@@ -137,8 +156,23 @@ int main()
 
         // Draw the triangle
         glUseProgram(shader->program);
+
+        // Set the transform
+        mat4 transform = GLM_MAT4_IDENTITY_INIT;
+        position[1] = sinf(SDL_GetTicks() / 1000.0f) * 0.5f;
+        glm_translate(transform, position);
+        glm_rotate(transform, SDL_GetTicks() / 1000.0f, (vec3){0.0f, 0.0f, 1.0f});
+
+        // Pass the transform to the shader
+        glUniformMatrix4fv(transform_loc, 1, GL_FALSE, (float *)transform);
+
+        // Bind the element buffer object
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+        // Bind the texture
         glBindTexture(GL_TEXTURE_2D, texture->id);
+
+        // Draw the triangles
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Swap our back buffer to the front
