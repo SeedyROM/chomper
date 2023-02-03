@@ -63,16 +63,22 @@ int main()
                     show_wireframe = !show_wireframe;
                     glPolygonMode(GL_FRONT_AND_BACK, show_wireframe ? GL_LINE : GL_FILL);
                     break;
+
+                case SDLK_UP:
+                    camera_scale[0] += 0.1f;
+                    camera_scale[1] += 0.1f;
+                    break;
+
+                case SDLK_DOWN:
+                    camera_scale[0] -= 0.1f;
+                    camera_scale[1] -= 0.1f;
+                    break;
                 }
                 break;
 
             case SDL_MOUSEMOTION:
                 camera_position[0] = event.motion.x - 640.0f;
                 camera_position[1] = event.motion.y - 360.0f;
-                break;
-            case SDL_MOUSEWHEEL:
-                camera_scale[0] += event.wheel.y * 0.1f;
-                camera_scale[1] += event.wheel.y * 0.1f;
                 break;
             }
         }
@@ -84,7 +90,7 @@ int main()
         rotation += 0.01f;
 
         // Update the camera
-        SpriteRenderer_SetCamera(sprite_renderer, camera_position, 0.0f, (vec2){1.0f, 1.0f});
+        SpriteRenderer_SetCamera(sprite_renderer, camera_position, 0.0f, camera_scale);
 
         // Fill the screen with sprites
         for (int y = 0; y < 720; y += 64)
