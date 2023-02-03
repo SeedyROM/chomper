@@ -3,6 +3,7 @@ project(chomper)
 
 # Use C11
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_FLAGS "-Wall -Wextra -Werror")
 
 # Get all the source files
 file(GLOB_RECURSE SOURCES src/*.c)
@@ -18,7 +19,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
-#include CGLM
+# Include CGLM
 add_subdirectory(external/cglm)
 include_directories(external/cglm/include)
 

@@ -23,4 +23,4 @@ typedef struct Texture
 Texture *Texture_Alloc();
 bool Texture_Load(Texture *texture, const char *path);
 bool Texture_Unload(Texture *texture);
-void Texture_Dealloc(Texture *texture);
+void Texture_Destroy(Texture *texture);

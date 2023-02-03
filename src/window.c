@@ -1,14 +1,14 @@
-#include "renderer.h"
+#include "window.h"
 
 #include "common.h"
 
-Renderer *Renderer_Alloc()
+Window *Window_Alloc()
 {
-    TRY_ALLOC(renderer, Renderer, 1);
+    TRY_ALLOC(renderer, Window, 1);
     return renderer;
 }
 
-bool Renderer_Init(Renderer *renderer, const char *title, int width, int height)
+bool Window_Init(Window *renderer, const char *title, int width, int height)
 {
     // Initialize SDL
     TRY_SDL(SDL_Init(SDL_INIT_VIDEO) == 0);
@@ -36,14 +36,25 @@ bool Renderer_Init(Renderer *renderer, const char *title, int width, int height)
     return true;
 }
 
-void Renderer_Destroy(Renderer *renderer)
+void Window_Clear(float r, float g, float b, float a)
+{
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Window_Swap(Window *renderer)
+{
+    SDL_GL_SwapWindow(renderer->window);
+}
+
+void Window_Deinit(Window *renderer)
 {
     SDL_GL_DeleteContext(renderer->gl_context);
     SDL_DestroyWindow(renderer->window);
     SDL_Quit();
 }
 
-void Renderer_Dealloc(Renderer *renderer)
+void Window_Destroy(Window *renderer)
 {
     free(renderer);
 }

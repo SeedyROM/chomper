@@ -1,111 +1,25 @@
 #include <stdio.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <stdint.h>
 
-#include <cglm/mat4.h>
 #include <cglm/vec3.h>
-#include <cglm/cglm.h>
 
-#include "renderer.h"
-#include "common.h"
+#include "window.h"
 #include "texture.h"
-#include "shader.h"
-
-typedef struct Vertex
-{
-    float position[3];
-    float color[3];
-    float tex_coord[2];
-} Vertex;
+#include "sprite_renderer.h"
 
 int main()
 {
     // Create a renderer.
-    Renderer *renderer = Renderer_Alloc();
-    if (!Renderer_Init(renderer, "Chomper v0.0.1", 720, 720))
+    Window *window = Window_Alloc();
+    if (!Window_Init(window, "Chomper v0.0.1", 1280, 720))
     {
         fprintf(stderr, "Failed to initialize renderer");
         return 1;
     }
 
-    // TODO: This needs to be abstracted.
-
-    // Setup drawing
-    Vertex vertices[] = {
-        {
-            .position = {0.5f, 0.5f, 0.0f},
-            .color = {1.0f, 0.0f, 0.0f},
-            .tex_coord = {1.0f, 1.0f},
-        },
-        {
-            .position = {0.5f, -0.5f, 0.0f},
-            .color = {0.0f, 1.0f, 0.0f},
-            .tex_coord = {1.0f, 0.0f},
-        },
-        {
-            .position = {-0.5f, -0.5f, 0.0f},
-            .color = {0.0f, 0.0f, 1.0f},
-            .tex_coord = {0.0f, 0.0f},
-        },
-        {
-            .position = {-0.5f, 0.5f, 0.0f},
-            .color = {1.0f, 1.0f, 0.0f},
-            .tex_coord = {0.0f, 1.0f},
-        },
-    };
-    unsigned int indices[] = {
-        // note that we start from 0!
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
-    // Create the vertex array object
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    // Create the vertex buffer object
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    // Upload the vertex data to the GPU
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Create the element buffer object.
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Enable the vertex attribute
-    glEnableVertexAttribArray(0);
-    // Set the vertex attribute pointer
-    glVertexAttribPointer(0, STRUCT_FIELD_SIZE(Vertex, position), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, position));
-    // Enable the vertex color attribute
-    glEnableVertexAttribArray(1);
-    // Set the vertex color attribute pointer
-    glVertexAttribPointer(1, STRUCT_FIELD_SIZE(Vertex, color), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, color));
-    // Enable the vertex texture coordinate attribute
-    glEnableVertexAttribArray(2);
-    // Set the vertex texture coordinate attribute pointer
-    glVertexAttribPointer(2, STRUCT_FIELD_SIZE(Vertex, tex_coord), GL_FLOAT, GL_FALSE, sizeof(Vertex), STRUCT_FIELD_OFFSET(Vertex, tex_coord));
-
-    // TODO: End abstracted drawing setup.
-
-    // Create the shader
-    Shader *shader = Shader_Alloc();
-    if (!Shader_FromSource(shader, "../assets/shaders/vertex.glsl", "../assets/shaders/fragment.glsl"))
+    SpriteRenderer *sprite_renderer = SpriteRenderer_Alloc();
+    if (!SpriteRenderer_Init(sprite_renderer))
     {
-        fprintf(stderr, "Failed to create shader");
-        return 1;
-    }
-
-    // Pass transform uniform to shader
-    GLuint transform_loc = glGetUniformLocation(shader->program, "transform");
-    if (transform_loc == -1)
-    {
-        fprintf(stderr, "Failed to get transform uniform location");
+        fprintf(stderr, "Failed to initialize sprite renderer");
         return 1;
     }
 
@@ -118,7 +32,11 @@ int main()
     }
 
     // Sprite position
-    vec3 position = {0.0f, 0.0f, 1.0f};
+    float rotation = 0.0f;
+
+    // Camera position
+    vec3 camera_position = {0.0f, 0.0f, 0.0f};
+    vec2 camera_scale = {1.0f, 1.0f};
 
     // Run the game loop
     bool close_requested = false;
@@ -147,46 +65,48 @@ int main()
                     break;
                 }
                 break;
+
+            case SDL_MOUSEMOTION:
+                camera_position[0] = event.motion.x - 640.0f;
+                camera_position[1] = event.motion.y - 360.0f;
+                break;
+            case SDL_MOUSEWHEEL:
+                camera_scale[0] += event.wheel.y * 0.1f;
+                camera_scale[1] += event.wheel.y * 0.1f;
+                break;
             }
         }
 
-        // Clear the screen to black
-        glClearColor(0.2f, 0.2f, 0.7f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // Clear the screen
+        Window_Clear(0.2f, 0.2f, 0.7f, 1.0f);
 
-        // Draw the triangle
-        glUseProgram(shader->program);
+        // Draw the sprite
+        rotation += 0.01f;
 
-        // Set the transform
-        mat4 transform = GLM_MAT4_IDENTITY_INIT;
-        position[1] = sinf(SDL_GetTicks() / 1000.0f) * 0.5f;
-        glm_translate(transform, position);
-        glm_rotate(transform, SDL_GetTicks() / 1000.0f, (vec3){0.0f, 0.0f, 1.0f});
+        // Update the camera
+        SpriteRenderer_SetCamera(sprite_renderer, camera_position, 0.0f, (vec2){1.0f, 1.0f});
 
-        // Pass the transform to the shader
-        glUniformMatrix4fv(transform_loc, 1, GL_FALSE, (float *)transform);
-
-        // Bind the element buffer object
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-        // Bind the texture
-        glBindTexture(GL_TEXTURE_2D, texture->id);
-
-        // Draw the triangles
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // Fill the screen with sprites
+        for (int y = 0; y < 720; y += 64)
+        {
+            for (int x = 0; x < 1280; x += 64)
+            {
+                SpriteRenderer_Draw(sprite_renderer, texture, (vec2){x, y}, (vec2){64, 64}, rotation, (vec3){1.0f, 1.0f, 1.0f});
+            }
+        }
 
         // Swap our back buffer to the front
-        SDL_GL_SwapWindow(renderer->window);
+        Window_Swap(window);
     }
 
     // Cleanup
-    Shader_Dealloc(shader);
+    // Shader_Destroy(shader);
 
     Texture_Unload(texture);
-    Texture_Dealloc(texture);
+    Texture_Destroy(texture);
 
-    Renderer_Destroy(renderer);
-    Renderer_Dealloc(renderer);
+    Window_Deinit(window);
+    Window_Destroy(window);
 
     return 0;
 }

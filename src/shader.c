@@ -8,7 +8,6 @@ Shader *Shader_Alloc()
     return shader;
 }
 
-// TODO: Fix shader source warnings.
 bool Shader_FromSource(Shader *shader, const char *vertex_source_path, const char *fragment_source_path)
 {
     // Load the shader sources.
@@ -64,7 +63,48 @@ bool Shader_FromSource(Shader *shader, const char *vertex_source_path, const cha
     return true;
 }
 
-void Shader_Dealloc(Shader *shader)
+void Shader_Use(Shader *shader)
 {
+    glUseProgram(shader->program);
+}
+
+void Shader_SetBool(Shader *shader, const char *name, bool value)
+{
+    glUniform1i(glGetUniformLocation(shader->program, name), (int)value);
+}
+
+void Shader_SetInt(Shader *shader, const char *name, int value)
+{
+    glUniform1i(glGetUniformLocation(shader->program, name), value);
+}
+
+void Shader_SetFloat(Shader *shader, const char *name, float value)
+{
+    glUniform1f(glGetUniformLocation(shader->program, name), value);
+}
+
+void Shader_SetVec2(Shader *shader, const char *name, float x, float y)
+{
+    glUniform2f(glGetUniformLocation(shader->program, name), x, y);
+}
+
+void Shader_SetVec3(Shader *shader, const char *name, float x, float y, float z)
+{
+    glUniform3f(glGetUniformLocation(shader->program, name), x, y, z);
+}
+
+void Shader_SetVec4(Shader *shader, const char *name, float x, float y, float z, float w)
+{
+    glUniform4f(glGetUniformLocation(shader->program, name), x, y, z, w);
+}
+
+void Shader_SetMat4(Shader *shader, const char *name, mat4 *mat4)
+{
+    glUniformMatrix4fv(glGetUniformLocation(shader->program, name), 1, GL_FALSE, (float *)mat4);
+}
+
+void Shader_Destroy(Shader *shader)
+{
+    glDeleteProgram(shader->program);
     free(shader);
 }

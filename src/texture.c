@@ -47,7 +47,7 @@ bool Texture_Unload(Texture *texture)
     glDeleteTextures(1, &texture->id);
     return true;
 }
-void Texture_Dealloc(Texture *texture)
+void Texture_Destroy(Texture *texture)
 {
     free(texture);
 }
