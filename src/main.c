@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 #include <cglm/vec3.h>
 
@@ -12,14 +13,14 @@ int main()
     Window *window = Window_Alloc();
     if (!Window_Init(window, "Chomper v0.0.1", 1280, 720))
     {
-        fprintf(stderr, "Failed to initialize renderer");
+        fprintf(stderr, "Failed to initialize renderer\n");
         return 1;
     }
 
     SpriteRenderer *sprite_renderer = SpriteRenderer_Alloc();
     if (!SpriteRenderer_Init(sprite_renderer))
     {
-        fprintf(stderr, "Failed to initialize sprite renderer");
+        fprintf(stderr, "Failed to initialize sprite renderer\n");
         return 1;
     }
 
@@ -27,7 +28,7 @@ int main()
     Texture *texture = Texture_Alloc();
     if (!Texture_Load(texture, "../assets/textures/awesome.png"))
     {
-        fprintf(stderr, "Failed to load texture");
+        fprintf(stderr, "Failed to load texture\n");
         return 1;
     }
 
@@ -37,6 +38,7 @@ int main()
     // Camera position
     vec3 camera_position = {0.0f, 0.0f, 0.0f};
     vec2 camera_scale = {1.0f, 1.0f};
+    vec2 sprite_position = {0.0f, 0.0f};
 
     // Run the game loop
     bool close_requested = false;
@@ -63,24 +65,61 @@ int main()
                     show_wireframe = !show_wireframe;
                     glPolygonMode(GL_FRONT_AND_BACK, show_wireframe ? GL_LINE : GL_FILL);
                     break;
-
-                case SDLK_UP:
-                    camera_scale[0] += 0.1f;
-                    camera_scale[1] += 0.1f;
-                    break;
-
-                case SDLK_DOWN:
-                    camera_scale[0] -= 0.1f;
-                    camera_scale[1] -= 0.1f;
-                    break;
                 }
-                break;
 
-            case SDL_MOUSEMOTION:
-                camera_position[0] = event.motion.x - 640.0f;
-                camera_position[1] = event.motion.y - 360.0f;
                 break;
             }
+        }
+
+        // Get key states.
+        const Uint8 *key_states = SDL_GetKeyboardState(NULL);
+
+        // Update camera position.
+        if (key_states[SDL_SCANCODE_W])
+        {
+            camera_position[1] += 10.0f;
+        }
+        if (key_states[SDL_SCANCODE_S])
+        {
+            camera_position[1] -= 10.0f;
+        }
+        if (key_states[SDL_SCANCODE_A])
+        {
+            camera_position[0] -= 10.0f;
+        }
+        if (key_states[SDL_SCANCODE_D])
+        {
+            camera_position[0] += 10.0f;
+        }
+
+        // Update the camera zoom.
+        if (key_states[SDL_SCANCODE_Q])
+        {
+            camera_scale[0] += 0.01f;
+            camera_scale[1] += 0.01f;
+        }
+        if (key_states[SDL_SCANCODE_E])
+        {
+            camera_scale[0] -= 0.01f;
+            camera_scale[1] -= 0.01f;
+        }
+
+        // Update sprite position.
+        if (key_states[SDL_SCANCODE_UP])
+        {
+            sprite_position[1] -= 10.0f;
+        }
+        if (key_states[SDL_SCANCODE_DOWN])
+        {
+            sprite_position[1] += 10.0f;
+        }
+        if (key_states[SDL_SCANCODE_LEFT])
+        {
+            sprite_position[0] -= 10.0f;
+        }
+        if (key_states[SDL_SCANCODE_RIGHT])
+        {
+            sprite_position[0] += 10.0f;
         }
 
         // Clear the screen
@@ -90,16 +129,10 @@ int main()
         rotation += 0.01f;
 
         // Update the camera
-        SpriteRenderer_SetCamera(sprite_renderer, camera_position, 0.0f, camera_scale);
+        SpriteRenderer_SetCamera(sprite_renderer, camera_position, 0, camera_scale);
 
         // Fill the screen with sprites
-        for (int y = 0; y < 720; y += 64)
-        {
-            for (int x = 0; x < 1280; x += 64)
-            {
-                SpriteRenderer_Draw(sprite_renderer, texture, (vec2){x, y}, (vec2){64, 64}, rotation, (vec3){1.0f, 1.0f, 1.0f});
-            }
-        }
+        SpriteRenderer_Draw(sprite_renderer, texture, sprite_position, (vec2){(float)texture->info.width / 2.0f, (float)texture->info.height / 2.0f}, rotation, (vec3){1.0f, 1.0f, 1.0f});
 
         // Swap our back buffer to the front
         Window_Swap(window);
