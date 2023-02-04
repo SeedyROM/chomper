@@ -8,6 +8,7 @@
 
 #include "texture.h"
 #include "shader.h"
+#include "window.h"
 
 typedef struct SpriteRenderer
 {
@@ -16,10 +17,12 @@ typedef struct SpriteRenderer
     Shader *shader;
     mat4 projection;
     mat4 view;
+    vec2 size;
 } SpriteRenderer;
 
 SpriteRenderer *SpriteRenderer_Alloc();
-bool SpriteRenderer_Init(SpriteRenderer *renderer);
+bool SpriteRenderer_Init(SpriteRenderer *renderer, Window *window);
+void SpriteRenderer_SetSize(SpriteRenderer *renderer, vec2 size);
 void SpriteRenderer_SetProjection(SpriteRenderer *renderer, mat4 projection);
 void SpriteRenderer_SetCamera(SpriteRenderer *renderer, vec3 position, float rotation, vec2 scale);
 void SpriteRenderer_Draw(SpriteRenderer *renderer, Texture *sprite, vec2 position, vec2 size, GLfloat rotate, vec3 color);

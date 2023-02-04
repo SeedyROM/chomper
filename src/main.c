@@ -18,7 +18,7 @@ int main()
     }
 
     SpriteRenderer *sprite_renderer = SpriteRenderer_Alloc();
-    if (!SpriteRenderer_Init(sprite_renderer))
+    if (!SpriteRenderer_Init(sprite_renderer, window))
     {
         fprintf(stderr, "Failed to initialize sprite renderer\n");
         return 1;

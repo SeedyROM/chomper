@@ -18,10 +18,12 @@ SpriteRenderer *SpriteRenderer_Alloc()
     return renderer;
 }
 
-bool SpriteRenderer_Init(SpriteRenderer *renderer)
+bool SpriteRenderer_Init(SpriteRenderer *renderer, Window *window)
 {
-    // Create the projection matrix
-    glm_ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f, renderer->projection);
+    // Set the initial window size.
+    int width, height;
+    SDL_GetWindowSize(window->window, &width, &height);
+    SpriteRenderer_SetSize(renderer, (vec2){(float)width, (float)height});
 
     // Create the view matrix
     glm_mat4_identity(renderer->view);
@@ -53,14 +55,19 @@ bool SpriteRenderer_Init(SpriteRenderer *renderer)
     return true;
 }
 
+void SpriteRenderer_SetSize(SpriteRenderer *renderer, vec2 size)
+{
+    glm_ortho(0.0f, size[0], size[1], 0.0f, -1.0f, 1.0f, renderer->projection);
+}
+
 void SpriteRenderer_SetCamera(SpriteRenderer *renderer, vec3 position, float rotation, vec2 scale)
 {
     glm_mat4_identity(renderer->view);
     glm_translate(renderer->view, position);
     // Rotate around the center of the screen
-    glm_translate(renderer->view, (vec3){1280.0f / 2.0f, 720.0f / 2.0f, 0.0f});
+    glm_translate(renderer->view, (vec3){renderer->size[0] / 2.0f, renderer->size[1] / 2.0f, 0.0f});
     glm_rotate_z(renderer->view, rotation, renderer->view);
-    glm_translate(renderer->view, (vec3){-1280.0f / 2.0f, -720.0f / 2.0f, 0.0f});
+    glm_translate(renderer->view, (vec3){-renderer->size[0] / 2.0f, -renderer->size[1] / 2.0f, 0.0f});
     glm_scale(renderer->view, scale);
 }
 
