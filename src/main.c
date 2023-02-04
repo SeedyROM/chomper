@@ -9,7 +9,7 @@
 
 int main()
 {
-    // Create a renderer.
+    // Create a window and gl context.
     Window *window = Window_Alloc();
     if (!Window_Init(window, "Chomper v0.0.1", 1280, 720))
     {
@@ -17,6 +17,7 @@ int main()
         return 1;
     }
 
+    // Create a sprite renderer.
     SpriteRenderer *sprite_renderer = SpriteRenderer_Alloc();
     if (!SpriteRenderer_Init(sprite_renderer, window))
     {
@@ -24,7 +25,7 @@ int main()
         return 1;
     }
 
-    // Load the texture
+    // Load a texture
     Texture *texture = Texture_Alloc();
     if (!Texture_Load(texture, "../assets/textures/awesome.png"))
     {

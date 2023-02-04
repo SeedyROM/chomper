@@ -8,7 +8,7 @@ Window *Window_Alloc()
     return renderer;
 }
 
-bool Window_Init(Window *renderer, const char *title, int width, int height)
+bool Window_Init(Window *window, const char *title, int width, int height)
 {
     // Initialize SDL
     TRY_SDL(SDL_Init(SDL_INIT_VIDEO) == 0);
@@ -20,12 +20,12 @@ bool Window_Init(Window *renderer, const char *title, int width, int height)
     TRY_SDL(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1) == 0);
 
     // Create the SDL window.
-    renderer->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
-    TRY_SDL(renderer->window != NULL);
+    window->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
+    TRY_SDL(window->window != NULL);
 
     // Create the OpenGL context.
-    renderer->gl_context = SDL_GL_CreateContext(renderer->window);
-    TRY_SDL(renderer->gl_context != NULL);
+    window->gl_context = SDL_GL_CreateContext(window->window);
+    TRY_SDL(window->gl_context != NULL);
 
     // Setup OpenGL viewport.
     glViewport(0, 0, width, height);
@@ -42,19 +42,19 @@ void Window_Clear(float r, float g, float b, float a)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Window_Swap(Window *renderer)
+void Window_Swap(Window *window)
 {
-    SDL_GL_SwapWindow(renderer->window);
+    SDL_GL_SwapWindow(window->window);
 }
 
-void Window_Deinit(Window *renderer)
+void Window_Deinit(Window *window)
 {
-    SDL_GL_DeleteContext(renderer->gl_context);
-    SDL_DestroyWindow(renderer->window);
+    SDL_GL_DeleteContext(window->gl_context);
+    SDL_DestroyWindow(window->window);
     SDL_Quit();
 }
 
-void Window_Destroy(Window *renderer)
+void Window_Destroy(Window *window)
 {
-    free(renderer);
+    free(window);
 }
