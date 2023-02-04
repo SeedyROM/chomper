@@ -75,11 +75,14 @@ void SpriteRenderer_Draw(SpriteRenderer *renderer, Texture *texture, vec2 positi
     glm_translate(model, (vec3){-0.5f * size[0], -0.5f * size[0], 0.0f});
     glm_scale(model, (vec3){size[0], size[1], 1.0f});
 
+    // Calculate the model-view-projection matrix on the CPU.
+    mat4 mvp;
+    glm_mat4_mul(renderer->projection, renderer->view, mvp);
+    glm_mat4_mul(mvp, model, mvp);
+
     // Draw sprite
     Shader_Use(renderer->shader);
-    Shader_SetMat4(renderer->shader, "model", &model);
-    Shader_SetMat4(renderer->shader, "view", &renderer->view);
-    Shader_SetMat4(renderer->shader, "projection", &renderer->projection);
+    Shader_SetMat4(renderer->shader, "mvp", &mvp);
     Shader_SetVec3(renderer->shader, "spriteColor", color[0], color[1], color[2]);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture->id);
