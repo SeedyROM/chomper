@@ -3,9 +3,7 @@
 
 #include <cglm/vec3.h>
 
-#include "window.h"
-#include "texture.h"
-#include "sprite_renderer.h"
+#include "rendering/rendering.h"
 
 int main()
 {
