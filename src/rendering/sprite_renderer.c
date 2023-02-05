@@ -63,11 +63,13 @@ void SpriteRenderer_SetSize(SpriteRenderer *renderer, vec2 size)
 void SpriteRenderer_SetCamera(SpriteRenderer *renderer, vec3 position, float rotation, vec2 scale)
 {
     glm_mat4_identity(renderer->view);
+    // Translate
     glm_translate(renderer->view, position);
     // Rotate around the center of the screen
     glm_translate(renderer->view, (vec3){renderer->size[0] / 2.0f, renderer->size[1] / 2.0f, 0.0f});
     glm_rotate_z(renderer->view, rotation, renderer->view);
     glm_translate(renderer->view, (vec3){-renderer->size[0] / 2.0f, -renderer->size[1] / 2.0f, 0.0f});
+    // Scale
     glm_scale(renderer->view, scale);
 }
 
