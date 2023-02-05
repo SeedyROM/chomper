@@ -89,13 +89,22 @@ void SpriteRenderer_Draw(SpriteRenderer *renderer, Texture *texture, vec2 positi
     glm_mat4_mul(renderer->projection, renderer->view, mvp);
     glm_mat4_mul(mvp, model, mvp);
 
-    // Draw sprite
+    // Enable transparent textures
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Setup the shader and uniforms
     Shader_Use(renderer->shader);
     Shader_SetMat4(renderer->shader, "mvp", &mvp);
     Shader_SetVec3(renderer->shader, "spriteColor", color[0], color[1], color[2]);
+
+    // Bind and draw the texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture->id);
     glBindVertexArray(renderer->vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
+
+    // Disable transparent textures
+    glDisable(GL_BLEND);
 }

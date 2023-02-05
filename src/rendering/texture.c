@@ -14,7 +14,6 @@ Texture *Texture_Alloc()
 bool Texture_Load(Texture *texture, const char *path)
 {
     // Load the image data with stb_image.
-    stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(path, &texture->info.width, &texture->info.height, &texture->info.channels, 0);
     if (data == NULL)
     {

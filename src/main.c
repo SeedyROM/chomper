@@ -1,9 +1,40 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include <cglm/vec3.h>
 
 #include "rendering/rendering.h"
+
+typedef struct Sprite
+{
+    Texture *texture;
+    vec3 position;
+    vec3 size;
+    vec3 color;
+    vec3 scale;
+    float rotation;
+} Sprite;
+
+void Sprite_FromTexture(Sprite *sprite, Texture *texture, vec3 position, vec3 color, float rotation)
+{
+    sprite->texture = texture;
+    memcpy(sprite->position, position, sizeof(vec3));
+    memcpy(sprite->size, (vec3){texture->info.width, texture->info.height, 1.0f}, sizeof(vec3));
+    memcpy(sprite->color, color, sizeof(vec3));
+    sprite->rotation = rotation;
+}
+
+void Sprite_SetScale(Sprite *sprite, vec3 scale)
+{
+    memcpy(sprite->scale, scale, sizeof(vec3));
+}
+
+void Sprite_Draw(Sprite *sprite, SpriteRenderer *renderer)
+{
+    vec3 scaled_size = {sprite->scale[0] * sprite->size[0], sprite->scale[1] * sprite->size[1], 1.0f};
+    SpriteRenderer_Draw(renderer, sprite->texture, sprite->position, scaled_size, sprite->rotation, sprite->color);
+}
 
 int main()
 {
@@ -31,13 +62,19 @@ int main()
         return 1;
     }
 
-    // Sprite position
-    float rotation = 0.0f;
+    // Create a sprite.
+    Sprite sprite;
+    Sprite_FromTexture(&sprite, texture, (vec3){0.0f, 0.0f, 0.0f}, (vec3){1.0f, 1.0f, 1.0f}, 0.0f);
+    Sprite_SetScale(&sprite, (vec3){0.33f, 0.33f, 1.0f});
+
+    // Create another sprite.
+    Sprite sprite2;
+    Sprite_FromTexture(&sprite2, texture, (vec3){200.0f, 200.0f, 0.0f}, (vec3){1.0f, 1.0f, 1.0f}, 0.0f);
+    Sprite_SetScale(&sprite2, (vec3){0.33f, 0.33f, 1.0f});
 
     // Camera position
     vec3 camera_position = {0.0f, 0.0f, 0.0f};
     vec2 camera_scale = {1.0f, 1.0f};
-    vec2 sprite_position = {0.0f, 0.0f};
 
     // Run the game loop
     bool close_requested = false;
@@ -94,44 +131,42 @@ int main()
         // Update the camera zoom.
         if (key_states[SDL_SCANCODE_Q])
         {
-            camera_scale[0] += 0.01f;
-            camera_scale[1] += 0.01f;
+            camera_scale[0] -= 0.01f;
+            camera_scale[1] -= 0.01f;
         }
         if (key_states[SDL_SCANCODE_E])
         {
-            camera_scale[0] -= 0.01f;
-            camera_scale[1] -= 0.01f;
+            camera_scale[0] += 0.01f;
+            camera_scale[1] += 0.01f;
         }
 
         // Update sprite position.
         if (key_states[SDL_SCANCODE_UP])
         {
-            sprite_position[1] -= 10.0f;
+            sprite.position[1] -= 10.0f;
         }
         if (key_states[SDL_SCANCODE_DOWN])
         {
-            sprite_position[1] += 10.0f;
+            sprite.position[1] += 10.0f;
         }
         if (key_states[SDL_SCANCODE_LEFT])
         {
-            sprite_position[0] -= 10.0f;
+            sprite.position[0] -= 10.0f;
         }
         if (key_states[SDL_SCANCODE_RIGHT])
         {
-            sprite_position[0] += 10.0f;
+            sprite.position[0] += 10.0f;
         }
 
         // Clear the screen
         Window_Clear(0.2f, 0.2f, 0.7f, 1.0f);
 
-        // Draw the sprite
-        rotation += 0.01f;
-
         // Update the camera
         SpriteRenderer_SetCamera(sprite_renderer, camera_position, 0, camera_scale);
 
-        // Fill the screen with sprites
-        SpriteRenderer_Draw(sprite_renderer, texture, sprite_position, (vec2){(float)texture->info.width / 2.0f, (float)texture->info.height / 2.0f}, rotation, (vec3){1.0f, 1.0f, 1.0f});
+        // Draw the sprites
+        Sprite_Draw(&sprite2, sprite_renderer);
+        Sprite_Draw(&sprite, sprite_renderer);
 
         // Swap our back buffer to the front
         Window_Swap(window);
